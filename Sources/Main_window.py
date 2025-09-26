@@ -15,7 +15,7 @@ from Instructions_window import InstructionWindow
 from SubPart_window import SubPartWindow
 from Vision_Command import send_command
 from fitsdll import Convert_Data, fn_Handshake, fn_Log, fn_Query
-from Logic.operation_handler import generate_csv, upload_result_to_fits 
+from usb_cam import capture_frames_cams
 
 class MainAppWindow(QMainWindow):
     def __init__(self):
@@ -42,16 +42,11 @@ class MainAppWindow(QMainWindow):
         os.makedirs(self.LogPath, exist_ok=True)
         
         self.clear_log()
-        print("Loading Camera....")
-        self.caps = MainAppWindow.init_cameras()
-        print("Finish Loading Camera")
-
         
         self.en = ""
         self.sn = ""
         self.promname = ""
         self.serial_log_path = ""
-        self.retries_path = ""
         self.program_list = []
         self.program_index = 0
         self.All_Result = []
@@ -107,7 +102,6 @@ class MainAppWindow(QMainWindow):
         # self.move_retries()
         self.clear_log()
         self.Mainlabel.setText("Waiting . . .")
-        self.Operatio_ID.setText("")
         self.stackedWidget.setCurrentIndex(0)
         QTimer.singleShot(100, self.start_login_flow)
 
@@ -133,7 +127,6 @@ class MainAppWindow(QMainWindow):
                 handshake_status = fn_Handshake(self.model, self.operation, sn)
                 print(handshake_status)
                 if handshake_status == True:   
-                    self.Operatio_ID.setText(self.operation)
                     self.sn = sn
 
                 else: 
@@ -141,14 +134,11 @@ class MainAppWindow(QMainWindow):
                     QTimer.singleShot(100, self.start_instruction_flow)
                     return
             else:
-                self.Operatio_ID.setText(self.operation)
                 self.sn = sn
             
             now = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
             self.serial_log_path = os.path.join(self.LogPath, f"{self.sn}_{now}")
             os.makedirs(self.serial_log_path, exist_ok=True)
-            self.retries_path = os.path.join(self.serial_log_path, "Retries")
-            os.makedirs(self.retries_path, exist_ok=True)
 
             self.subserial = SubPartWindow(sn, self.mode)
             
@@ -171,6 +161,11 @@ class MainAppWindow(QMainWindow):
 
     def retries(self):
         print("retries")
+        for i in range(5):
+            print(f"REMOVE IMG {i+1}")
+            label = getattr(self, f"Img_{i+1}")
+            label.clear()
+
         self.Result_images = {
             "Top": None,
             "0": None,
@@ -180,11 +175,14 @@ class MainAppWindow(QMainWindow):
         }
 
         jpeg_files = glob.glob(os.path.join(self.serial_log_path,"**.jpeg"))
-        print(jpeg_files)
+        print("jpeg_files:\t",jpeg_files)
         if jpeg_files:
             for file in jpeg_files:
-                des = os.path.join(self.retries_path, os.path.basename(file))
-                os.replace(file, des)
+                os.remove(file)
+                print("jpeg_files remove:\t",file)
+                # des = os.path.join(self.retries_path, os.path.basename(file))
+                # os.replace(file, des)
+            time.sleep(10)
         
         self.start_trigger_flow()
 
@@ -207,8 +205,6 @@ class MainAppWindow(QMainWindow):
                 self.setEnabled(True)
 
             time.sleep(3)
-                
-            frames = self.USB_snapshot_all()
 
             IV_img = None
             for i in range(5):
@@ -232,6 +228,7 @@ class MainAppWindow(QMainWindow):
                     )
                 )
 
+            frames = capture_frames_cams()
             now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             for i in range(4):
                 f = frames.get(i)
@@ -290,7 +287,6 @@ class MainAppWindow(QMainWindow):
             "Left side view": self.Result_images["2"],
             "Right side view": self.Result_images["3"],
             "Result": "PASS"
-            
         }
 
         if self.mode.upper() == "PRODUCTION":
@@ -301,8 +297,11 @@ class MainAppWindow(QMainWindow):
                 QMessageBox.information(self, "FITs success", "Success uploaded data to FITs")
             else:
                 QMessageBox.critical(self, "Failed uploaded data to FITs", log_status)
-                
-        PassInstruction = InstructionWindow(index=1)
+
+        for i in range(5):
+             label = getattr(self, f"Img_{i+1}")
+             label.clear()  
+        PassInstruction = InstructionWindow(self.mode, index=1)
         result = PassInstruction.exec()
         print("Finish")
         if result == QDialog.DialogCode.Accepted:
@@ -327,70 +326,7 @@ class MainAppWindow(QMainWindow):
             print(latest_jpeg)
             des = os.path.join(self.serial_log_path, os.path.basename(latest_jpeg))
             os.replace(latest_jpeg, des)
-        
         return des
-
-    def init_cameras():
-        w=640
-        h=480
-        fps=15
-        warmup=3
-        cams = {}
-        for idx in range(4):
-            cap = cv2.VideoCapture(idx, cv2.CAP_DSHOW)
-            if not cap.isOpened():
-                print(f"[Cam{idx}] open failed")
-                continue
-
-            cap.set(cv2.CAP_PROP_FRAME_WIDTH, float(w))
-            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, float(h))
-            cap.set(cv2.CAP_PROP_FPS, float(fps))
-
-            ok = False
-            for _ in range(warmup):
-                ret, _ = cap.read()
-                if ret:
-                    ok = True
-                    break
-                time.sleep(0.03)
-
-            if ok:
-                print(f"[Cam{idx}] ready")
-                cams[idx] = cap
-            else:
-                print(f"[Cam{idx}] read failed")
-                cap.release()
-        return cams
-
-    def USB_snapshot_all(self, retries=3, delay=0.03):
-        print("USB_snapshot_all")
-        frames = {}
-        for idx in (0,1,2,3):
-            cap = self.caps.get(idx)
-            if cap is None:
-                frames[idx] = None
-                print(f"[!] cam{idx} not initalized")
-                continue
-            
-            frame = None
-            for _ in range(retries):
-                ret, img = cap.read()
-                if not ret or img is None or img.size == 0:
-                    if cap.grab():
-                        ret, img = cap.retrieve()
-                if ret and img is not None and img.size > 0:
-                    frame = img
-                    break
-                time.sleep(delay)
-
-            if frame is None:
-                print(f"[!] Camera {idx} returned None")
-            frames[idx] = frame
-        return frames
-
-    def release_cameras(self):
-        for cap in getattr(self, "caps", []):
-            cap.release()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

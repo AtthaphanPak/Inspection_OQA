@@ -31,47 +31,6 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_3">
-      <item>
-       <widget class="QLabel" name="label_2">
-        <property name="font">
-         <font>
-          <pointsize>20</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-        <property name="text">
-         <string>OPERATION: </string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="Operatio_ID">
-        <property name="font">
-         <font>
-          <pointsize>20</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-        <property name="text">
-         <string>OQA Inspection</string>
-        </property>
-        <property name="scaledContents">
-         <bool>true</bool>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
      <layout class="QGridLayout" name="gridLayout_3">
       <property name="leftMargin">
        <number>10</number>
@@ -96,7 +55,6 @@
         <property name="font">
          <font>
           <pointsize>15</pointsize>
-          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -122,7 +80,6 @@
         <property name="font">
          <font>
           <pointsize>15</pointsize>
-          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -148,7 +105,6 @@
         <property name="font">
          <font>
           <pointsize>15</pointsize>
-          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -174,7 +130,6 @@
         <property name="font">
          <font>
           <pointsize>15</pointsize>
-          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -206,7 +161,6 @@
         <property name="font">
          <font>
           <pointsize>15</pointsize>
-          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -232,7 +186,6 @@
         <property name="font">
          <font>
           <pointsize>15</pointsize>
-          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -264,7 +217,6 @@
         <property name="font">
          <font>
           <pointsize>15</pointsize>
-          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -290,7 +242,6 @@
         <property name="font">
          <font>
           <pointsize>15</pointsize>
-          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -331,7 +282,6 @@
           <property name="font">
            <font>
             <pointsize>20</pointsize>
-            <weight>75</weight>
             <bold>true</bold>
            </font>
           </property>
@@ -358,7 +308,6 @@
           <property name="font">
            <font>
             <pointsize>10</pointsize>
-            <weight>75</weight>
             <bold>true</bold>
            </font>
           </property>
@@ -522,7 +471,6 @@
               <property name="font">
                <font>
                 <pointsize>15</pointsize>
-                <weight>75</weight>
                 <bold>true</bold>
                </font>
               </property>
@@ -563,7 +511,6 @@
               <property name="font">
                <font>
                 <pointsize>15</pointsize>
-                <weight>75</weight>
                 <bold>true</bold>
                 <stylestrategy>PreferAntialias</stylestrategy>
                </font>
